@@ -53,6 +53,11 @@ const HomePage = (props) => {
           }}
         />
       </Box>
+      <Box>
+        <Text color={"gray.500"} fontSize={"xl"} fontWeight="bold" my={3}>
+          수취금액은 123890 입니다.
+        </Text>
+      </Box>
     </Wrapper>
   );
 };
