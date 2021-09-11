@@ -1,10 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Wrapper from "../component/Wrapper";
-import { Input, Heading, Text, Box, Select } from "@chakra-ui/react";
+import { Input, Heading, Text, Box, Select, Button } from "@chakra-ui/react";
+import { baseURL } from "../const";
 
 const HomePage = (props) => {
-  const [receptionNation, setReceptionNation] = useState("");
   const [amountOfMoney, setAmountOfMoney] = useState(0);
+  const [currency, setCurrency] = useState(undefined);
+  const [currencyRate, setCurrencyRate] = useState(0);
+  const [exchagedMoney, setExchagedMoney] = useState(0);
+
+  useEffect(() => {
+    if (currency !== undefined) {
+      fetch(baseURL + "/api/v1/currency-rates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currency: currency }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const currencyRate = data.currencyRate;
+          setCurrencyRate(currencyRate);
+        });
+
+      setExchagedMoney(0);
+      setAmountOfMoney(0);
+    }
+  }, [currency]);
+
+  const handleButton = () => {
+    fetch(baseURL + "/api/v1/exchanges", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        currency: currency,
+        amountOfMoney: amountOfMoney,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setExchagedMoney(data.exchangedMoney);
+      });
+  };
 
   return (
     <Wrapper>
@@ -27,18 +67,18 @@ const HomePage = (props) => {
         <Select
           placeholder="수취 국가"
           onChange={(e) => {
-            setReceptionNation(e.target.value);
-            console.log(receptionNation);
+            setCurrency(e.target.value);
+            console.log(currency);
           }}
         >
-          <option value="korean">한국(KRW)</option>
-          <option value="japan">일본(JPY)</option>
-          <option value="philippine">필리핀(PHP)</option>
+          <option value="KRW">한국(KRW)</option>
+          <option value="JPY">일본(JPY)</option>
+          <option value="PHP">필리핀(PHP)</option>
         </Select>
       </Box>
       <Box>
         <Text color={"gray.500"} fontSize={"xl"} fontWeight="bold" my={3}>
-          환율 : 1111 KRW/USD
+          환율 : {currencyRate} {currency}/USD
         </Text>
       </Box>
       <Box>
@@ -48,15 +88,21 @@ const HomePage = (props) => {
         <Input
           placeholder="송금액을 입력해주세요."
           onChange={(e) => {
-            setAmountOfMoney(e.target.value);
+            const inputValue = e.target.value;
+            setAmountOfMoney(parseInt(inputValue));
             console.log(amountOfMoney);
           }}
         />
       </Box>
       <Box>
         <Text color={"gray.500"} fontSize={"xl"} fontWeight="bold" my={3}>
-          수취금액은 123890 입니다.
+          수취금액은 {exchagedMoney} {currency} 입니다.
         </Text>
+      </Box>
+      <Box>
+        <Button colorScheme="teal" size="md" onClick={handleButton}>
+          Submit
+        </Button>
       </Box>
     </Wrapper>
   );
