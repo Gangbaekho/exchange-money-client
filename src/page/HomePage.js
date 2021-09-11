@@ -29,21 +29,31 @@ const HomePage = (props) => {
     }
   }, [currency]);
 
+  const isValidAmountOfMoney = (money) => {
+    if (money > 0 && money <= 10000) {
+      return true;
+    }
+
+    return false;
+  };
+
   const handleButton = () => {
-    fetch(baseURL + "/api/v1/exchanges", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        currency: currency,
-        amountOfMoney: amountOfMoney,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setExchagedMoney(data.exchangedMoney);
-      });
+    if (isValidAmountOfMoney(amountOfMoney)) {
+      fetch(baseURL + "/api/v1/exchanges", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currency: currency,
+          amountOfMoney: amountOfMoney,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setExchagedMoney(data.exchangedMoney);
+        });
+    }
   };
 
   return (
@@ -99,6 +109,13 @@ const HomePage = (props) => {
           수취금액은 {exchagedMoney} {currency} 입니다.
         </Text>
       </Box>
+      {!isValidAmountOfMoney(amountOfMoney) && (
+        <Box>
+          <Text color={"red.500"} fontSize={"xl"} fontWeight="bold" my={3}>
+            송금액이 바르지 않습니다.
+          </Text>
+        </Box>
+      )}
       <Box>
         <Button colorScheme="teal" size="md" onClick={handleButton}>
           Submit
